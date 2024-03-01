@@ -1,11 +1,10 @@
 const dotenv = require("dotenv").config();
 const express = require('express');
 const mongoose = require('mongoose');
-const jwt = require("jsonwebtoken");
 const connect = require('./database/db.js');
 const users = require('./models/users.js');
 const Policy = require('./models/policy.js');
-const Joi = require("joi");
+const jwt = require("jsonwebtoken");
 const app = express();
 const secretKey=process.env.JWT_SECRET;
 const cors = require('cors');
