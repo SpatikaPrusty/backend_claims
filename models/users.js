@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema({
         isSmoke:{type: Boolean, required: [true]},
         isDiabetic:{type: Boolean, required: [true]},
         incomePerAnnum: {type: Number, default: 0},
-        mail: {type: String, required: [true]},
+        mail: {type: String, required: [true], unique: true},
         password: {
             type: String,
             required: [true],

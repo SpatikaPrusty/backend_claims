@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const connect = require('./database/db.js');
 const users = require('./models/users.js');
 const Policy = require('./models/policy.js');
+const policyHolder = require('./models/policyHolder.js')
 const jwt = require("jsonwebtoken");
 const app = express();
 const secretKey=process.env.JWT_SECRET;
@@ -287,6 +288,29 @@ function createUserInDatabase(newUser) {
     newUser.id = userId;
     return users.create(newUser);
 }
+app.post('/policyHolder', (req, res) => {
+    const { mail, policyNum } = req.body;
+
+    // Assuming createPolicyHolderInDatabase returns a Promise
+    console.log(req.body);
+    createPolicyHolderInDatabase(mail, policyNum)
+        .then(policyHolder => {
+            res.status(200).json({ policyHolder });
+        })
+        .catch(error => {
+            console.error('Error creating policy holder:', error);
+            res.status(500).send('Error creating policy holder');
+        });
+});
+
+async function createPolicyHolderInDatabase(mail, policyNum) {
+    const newpolicyHolder = new policyHolder({
+        mail: mail,
+        policyNum: policyNum
+    });
+    return policyHolder.create(newpolicyHolder);
+}
+
 // Read all users
 app.get('/users', function (req, res) {
     users.find({})
@@ -507,9 +531,54 @@ function createPolicyInDatabase(newPolicy) {
  *       500:
  *         description: Internal Server Error
  */
+// app.post("/policy", async (req, res) => {
+//     try {
+//         const { name, age, gender, isSmoke, isDiabetic, incomePerAnnum } = req.body;
+
+//         let suggest = [];
+//         if (isSmoke && isDiabetic) {
+//             suggest = [
+//                 { minAge: 18, maxAge: 60, minIncome: 200000, maxIncome: 600000, policies: ['1', '2', '3'] }
+//             ];
+//         } else if (isSmoke && !isDiabetic) {
+//             suggest = [
+//                 { minAge: 18, maxAge: 60, minIncome: 200000, maxIncome: 600000, policies: ['7', '8', '9'] }
+//             ];
+//         } else if (!isSmoke && isDiabetic) {
+//             suggest = [
+//                 { minAge: 18, maxAge: 60, minIncome: 200000, maxIncome: 600000, policies: ['4', '5', '6'] }
+//             ];
+//         } else {
+//             suggest = [
+//                 { minAge: 18, maxAge: 30, minIncome: 200000, maxIncome: 600000, policies: ['10', '11', '12'] }
+//             ];
+//         }
+
+//         const suggestedPolicies = [];
+//         for (const range of suggest) {
+//             if (age >= range.minAge && age <= range.maxAge && incomePerAnnum >= range.minIncome && incomePerAnnum <= range.maxIncome) {
+//                 suggestedPolicies.push(...range.policies);
+//             }
+//         }
+
+//         if (suggestedPolicies.length === 0) {
+//             return res.send('No policy');
+//         }
+
+//         const suggestedPolicyDetails = await Policy.find({ policyNum: { $in: suggestedPolicies } });
+
+//         if (!suggestedPolicyDetails || suggestedPolicyDetails.length === 0) {
+//             return res.status(404).send('Policies not found');
+//         }
+
+//         res.status(200).json({ suggestedPolicies: suggestedPolicyDetails });
+//     } catch (error) {
+//         res.status(500).send('Error finding policies: ' + error.message);
+//     }
+// });
 app.post("/policy", async (req, res) => {
     try {
-        const { name, age, gender, isSmoke, isDiabetic, incomePerAnnum } = req.body;
+        const { name, age, gender, isSmoke, isDiabetic, incomePerAnnum, mail } = req.body;
 
         let suggest = '';
         if (isSmoke) {
@@ -540,6 +609,7 @@ app.post("/policy", async (req, res) => {
         res.status(500).send('Error finding policy: ' + error.message);
     }
 });
+
 // Homepage
 /**
  * @swagger
