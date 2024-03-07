@@ -579,7 +579,10 @@ function createPolicyInDatabase(newPolicy) {
 app.post("/policy", async (req, res) => {
     try {
         const { name, age, gender, isSmoke, isDiabetic, incomePerAnnum, mail } = req.body;
-
+        // Validation checks
+        if (!name) {
+            return res.status(400).send('Name is required');
+        }
         let suggest = '';
         if (isSmoke) {
             if (age < 30) {
