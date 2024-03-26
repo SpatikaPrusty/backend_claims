@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const secretKey=process.env.JWT_SECRET;
 const cors = require('cors');
+const client = require('prom-client')
+
 app.use(cors());
 
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -16,6 +18,15 @@ const swaggerUi = require('swagger-ui-express');
 
 app.use(express.json());
 connect();
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ register: client.register })
+
+app.get('/metrics', async (req,res)=>{
+    res.setHeader('Content-Type', client.register.contentType);
+    const metrics = await client.register.metrics();
+    res.send(metrics);
+});
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -380,7 +391,7 @@ app.get('/users', function (req, res) {
  *       500:
  *         description: Internal Server Error
  */
-
+//Read user details by it's id.
 app.get('/users/:id', (req, res) => {
     const { id } = req.params;
     users.find({ _id: id })
