@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const secretKey=process.env.JWT_SECRET;
 const cors = require('cors');
-const client = require('prom-client')
+const client = require('prom-client');
 
 app.use(cors());
 
@@ -19,6 +19,7 @@ const swaggerUi = require('swagger-ui-express');
 app.use(express.json());
 connect();
 
+// Monitoring tool (Prometheus)
 const collectDefaultMetrics = client.collectDefaultMetrics;
 collectDefaultMetrics({ register: client.register })
 
@@ -164,6 +165,15 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs",swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Middleware 
+function checkApiKey(req, res, next) {
+    const apiKeyHeader = req.headers["x-api-key"];
+    if (!apiKeyHeader || apiKeyHeader !== process.env.API_KEY) {
+      return res.status(401).json({ message: "Invalid API Key" });
+    }
+    next();
+}
+
 /**
  * @swagger
  * /login:
@@ -213,6 +223,7 @@ app.post("/login", (req, res) => {
             res.status(500).json({ error: "Internal server error" });
         });
 });
+
 
 // CRUD OPERATIONS 
 // Create a new user with an id.
@@ -294,6 +305,7 @@ app.post('/register', (req, res) => {
             res.status(500).send('Error creating user: ' + error.message);
         });
 });
+
 function createUserInDatabase(newUser) {
     const userId = uuidv4();
     newUser.id = userId;
@@ -312,7 +324,7 @@ app.post('/policyHolder', (req, res) => {
             console.error('Error creating policy holder:', error);
             res.status(500).send('Error creating policy holder');
         });
-});
+}, checkApiKey);
 
 async function createPolicyHolderInDatabase(mail, policyNum) {
     const newpolicyHolder = new policyHolder({
@@ -331,7 +343,7 @@ app.get('/users', function (req, res) {
     .catch(error => {
         res.send('Error fetching users: '+ error.message);
     })
-});
+}, checkApiKey);
 
 // Get a user by it's id.
 /**
